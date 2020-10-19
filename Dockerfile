@@ -25,6 +25,7 @@ RUN VERSION_ID=$(rpm -q --queryformat '%{VERSION}' centos-release) \
         git \
         glibc \
         glibc-devel \
+        jq \
         kernel-headers \
         krb5-devel \
         krb5-libs \
@@ -32,6 +33,9 @@ RUN VERSION_ID=$(rpm -q --queryformat '%{VERSION}' centos-release) \
         make \
         openssl \
         openssl-devel \
+        rpm-build \
+        ruby-devel \
+        rubygems \
         sqlite-devel \
         swig \
         vim \
@@ -64,6 +68,18 @@ RUN echo "Processing python $PYTHON_VERSION" \
     && ln -s /opt/python-${digit_version}/bin/python${short_version} /usr/bin/py${digit_version} \
     && ln -s /opt/python-${digit_version}/bin/python${short_version} /opt/python-${digit_version}/bin/python \
     && /opt/python-${digit_version}/bin/python${short_version} -m ensurepip \
+    && rm -f /opt/python-${digit_version}/bin/pip \
+    && rm -f /opt/python-${digit_version}/bin/pip${major_version} \
+    && ln -s /opt/python-${digit_version}/bin/pip${short_version} /opt/python-${digit_version}/bin/pip \
+    && ln -s /opt/python-${digit_version}/bin/pip${short_version} /opt/python-${digit_version}/bin/pip${major_version} \
+    && ln -s /opt/python-${digit_version} /opt/python \
+    && (mkdir /apps 2>/dev/null || echo -n) \
+    && rm -rf /usr/src/Python-*
+
+RUN echo "Processing python $PYTHON_VERSION" \
+    && major_version="${PYTHON_VERSION:0:1}" \
+    && short_version="${PYTHON_VERSION:0:3}" \
+    && digit_version="${major_version}${short_version:2}" \
     && /opt/python-${digit_version}/bin/python${short_version} -m pip install --no-cache-dir --upgrade \
         'black;python_version>="3.6"' \
         flake8 \
@@ -75,13 +91,7 @@ RUN echo "Processing python $PYTHON_VERSION" \
         setuptools \
         tox \
         virtualenv \
-    && rm -f /opt/python-${digit_version}/bin/pip \
-    && rm -f /opt/python-${digit_version}/bin/pip${major_version} \
-    && ln -s /opt/python-${digit_version}/bin/pip${short_version} /opt/python-${digit_version}/bin/pip \
-    && ln -s /opt/python-${digit_version}/bin/pip${short_version} /opt/python-${digit_version}/bin/pip${major_version} \
-    && ln -s /opt/python-${digit_version} /opt/python \
-    && (mkdir /apps 2>/dev/null || echo -n) \
-    && rm -rf /usr/src/Python-*
+        wheel
 
 WORKDIR /apps
 

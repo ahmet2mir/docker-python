@@ -1,0 +1,9 @@
+---
+name: docker-python
+description: Use docker image in action instead of container.image
+branding:
+  color: yellow
+  icon: upload-cloud
+runs:
+  using: docker
+  image: quay.io/ahmet2mir/python:3.6
