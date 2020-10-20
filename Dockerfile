@@ -93,6 +93,13 @@ RUN echo "Processing python $PYTHON_VERSION" \
         virtualenv \
         wheel
 
+RUN echo "Adding UPX" \
+    && cd tmp \
+    && curl -sL https://github.com/upx/upx/releases/download/v3.96/upx-3.96-amd64_linux.tar.xz -o upx.tar.xz \
+    && tar xvf upx.tar.xz \
+    && /usr/bin/rm -f upx.tar.xz \
+    && mv ./upx-3.96-amd64_linux /opt/upx
+
 WORKDIR /apps
 
 ENV PATH /opt/python/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
