@@ -11,6 +11,8 @@ ENV PYTHON_PIP_VERSION $PYTHON_PIP_VERSION
 ENV LC_ALL en_US.utf-8
 ENV LANG en_US.utf-8
 
+ENV PATH /opt/python/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/root/.local/bin/
+
 RUN VERSION_ID=$(rpm -q --queryformat '%{VERSION}' centos-release) \
     && yum install -y \
         bash \
