@@ -76,22 +76,34 @@ RUN echo "Processing python $PYTHON_VERSION" \
     && (mkdir /apps 2>/dev/null || echo -n) \
     && rm -rf /usr/src/Python-*
 
-RUN echo "Processing python $PYTHON_VERSION" \
+
+RUN echo "Processing python deps" \
     && major_version="${PYTHON_VERSION:0:1}" \
     && short_version="${PYTHON_VERSION:0:3}" \
     && digit_version="${major_version}${short_version:2}" \
     && /opt/python-${digit_version}/bin/python${short_version} -m pip install --no-cache-dir --upgrade \
-        'black;python_version>="3.6"' \
-        flake8 \
-        gunicorn \
         pip==$PYTHON_PIP_VERSION \
-        pipenv \
-        pyinstaller \
-        pylint \
+        pipx \
         setuptools \
-        tox \
         virtualenv \
         wheel
+
+RUN echo "Processing pipx packages" \
+    && pipx install bandit \
+    && pipx install coverage \
+    && pipx install black \
+    && pipx install flake8 \
+    && pipx inject flake8 flake8-bugbear \
+    && pipx install poetry \
+    && pipx inject poetry poetry-dynamic-versioning \
+    && pipx install pyinstaller \
+    && pipx install pylint \
+    && pipx install pytest \
+    && pipx inject pytest pytest-cov \
+    && pipx install tox \
+    && pipx install virtualenv \
+    && pipx install pipenv \
+    && pipx install gunicorn
 
 RUN echo "Adding UPX" \
     && cd tmp \
