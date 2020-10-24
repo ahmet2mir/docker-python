@@ -1,7 +1,30 @@
+# Git 2.26 stage
+ARG VERSION_ID=7
+ARG REGISTRY_IMAGE=centos
+ARG VERSION_ID=7
+FROM $REGISTRY_IMAGE:$VERSION_ID
+RUN yum install -y \
+        wget \
+        curl-devel \
+        expat-devel \
+        gettext-devel \
+        openssl-devel \
+        zlib-devel \
+        gcc \
+        make \
+        perl-ExtUtils-MakeMaker
+RUN cd /usr/src \
+    && wget https://mirrors.edge.kernel.org/pub/software/scm/git/git-2.26.0.tar.gz \
+    && tar xz --no-same-owner -f git-2.26.0.tar.gz \
+    && cd git-2.26.0 \
+    && make prefix=/usr/local/git all \
+    && make prefix=/usr/local/git install \
+    && tar cvfz /tmp/git.tar.gz /usr/local/git
+
+# Python stage
 ARG VERSION_ID=7
 ARG REGISTRY_IMAGE=centos
 FROM $REGISTRY_IMAGE:$VERSION_ID
-
 ARG PYTHON_VERSION
 ARG PYTHON_PIP_VERSION
 
@@ -12,6 +35,8 @@ ENV LC_ALL en_US.utf-8
 ENV LANG en_US.utf-8
 
 ENV PATH /opt/python/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/root/.local/bin/
+
+COPY --from=0 /tmp/git.tar.gz /tmp/git.tar.gz
 
 RUN VERSION_ID=$(rpm -q --queryformat '%{VERSION}' centos-release) \
     && yum install -y \
@@ -24,7 +49,6 @@ RUN VERSION_ID=$(rpm -q --queryformat '%{VERSION}' centos-release) \
         gcc \
         gcc-c++ \
         gettext-devel \
-        git \
         glibc \
         glibc-devel \
         jq \
@@ -42,9 +66,16 @@ RUN VERSION_ID=$(rpm -q --queryformat '%{VERSION}' centos-release) \
         swig \
         vim \
         zlib-devel \
+    && yum remove -y git \
     && yum clean all \
     && rm -rf /var/cache/yum/* \
     && gem install --no-document ffi:1.12.2 fpm:1.11.0 ronn:0.7.3
+
+RUN echo "Adding git" \
+    cd / \
+    && tar xvfz /tmp/git.tar.gz \
+    && echo 'export PATH=/opt/python/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/root/.local/bin:/usr/local/git/bin' >> /etc/bashrc \
+    && ln -s /usr/local/git/bin/* /usr/bin/
 
 RUN echo "Processing python $PYTHON_VERSION" \
     && major_version="${PYTHON_VERSION:0:1}" \
@@ -77,7 +108,6 @@ RUN echo "Processing python $PYTHON_VERSION" \
     && ln -s /opt/python-${digit_version} /opt/python \
     && (mkdir /apps 2>/dev/null || echo -n) \
     && rm -rf /usr/src/Python-*
-
 
 RUN echo "Processing python deps" \
     && major_version="${PYTHON_VERSION:0:1}" \
@@ -114,6 +144,7 @@ RUN echo "Adding UPX" \
     && /usr/bin/rm -f upx.tar.xz \
     && mv ./upx-3.96-amd64_linux /opt/upx
 
+
 WORKDIR /apps
 
-ENV PATH /opt/python/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/root/.local/bin
+ENV PATH /opt/python/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/root/.local/bin:/usr/local/git/bin
