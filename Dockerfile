@@ -116,4 +116,4 @@ RUN echo "Adding UPX" \
 
 WORKDIR /apps
 
-ENV PATH /opt/python/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+ENV PATH /opt/python/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/root/.local/bin
